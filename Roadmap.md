@@ -2,21 +2,35 @@
 ###### v.1
 
 #### Versione 0.0.1 - Initial commit
-- [ ] Aggiornare Angular all'ultima versione disponibile;
-- [ ] Aggiornare Node.js all'ultima versione disponibile;
-- [ ] Creare una nuova app Angular con `ng new ascension-system --skip-tests`;
-- [ ] Creare un nuovo progetto Firebase per iniziare la configurazione;
-- [ ] Installare Firebase `npm i firebase`;
-- [ ] Installare FirebaseTools `npm i -g firebase-tools`;
-- [ ] (Opzionale) In angular.json aggiungere i comandi npm run `host` per deployare su Firebase (`firebase deploy --only hosting` per deployare online);
-- [ ] Creare cartelle necessarie dentro `src/app` per organizzare gli elementi: `components\ui`, `components\shared`, `services`, `models`, `pages`, `consts`;
-- [ ] Creare un file dentro `consts` chiamato `app-version.ts` per tenere traccia della versione dell'app. Al suo interno esportare una costante `APP_VERSION` con il numero di versione attuale dell'app;
+- [x] Aggiornare Angular all'ultima versione disponibile;
+- [x] Aggiornare Node.js all'ultima versione disponibile;
+- [x] Creare una nuova app Angular con `ng new ascension-system --skip-tests`;
+- [x] Creare cartelle necessarie dentro `src/app` per organizzare gli elementi: `components\ui`, `components\shared`, `services`, `models`, `pages`, `consts`;
+- [x] Creare un file dentro `consts` chiamato `app-version.ts` per tenere traccia della versione dell'app. Al suo interno esportare una costante `APP_VERSION` con il numero di versione attuale dell'app;
+- [x] Creare un nuovo progetto Firebase per iniziare la configurazione;
+- [x] Installare Firebase `npm i firebase`;
+- [x] Installare FirebaseTools `npm i -g firebase-tools`;
+- [x] Creare un file dentro `consts` chiamato `firebase-config.ts` per salvare la configurazione di Firebase;
+- [x] Creare un nuovo servizio dentro `services` chiamato `firebase.ts` con `ng generate service services/firebase`. Il servizio si occuperà di inizializzare Firebase e di esportare un'istanza del database per poterlo usare in tutta l'app, iniettarlo nel costruttore di `app.ts`;
+
+```typescript
+@Injectable({
+  providedIn: "root",
+})
+export class Firebase {
+  constructor() {
+    const app = initializeApp(FIREBASE_CONFIG);
+  }
+}
+```
+
+- [x] (Opzionale) In package.json aggiungere i comandi npm run `host` per buildare e deployare su Firebase (`npm run build && firebase deploy --only hosting` per deployare online);
 
 > È buona prassi nominare le costanti di questo genere con tutte le lettere maisucole e gli underscore al posto degli spazi, in questo modo è facile riconoscerle all'interno del codice e si capisce subito che si tratta di valori che non devono essere modificati.
 
-- [ ] Creare una cartella `images` dentro `public` per le immagini statiche valide per tutte le configurazioni di gioco, nello specifico le icone che andranno inserite in un'altra cartella chiamata `icons` dentro `images`;
-- [ ] _Installare_ le Material Symbols Icons tramite link nell'head (link dinamico, style rounded, istruzioni [qui](https://fonts.google.com/icons?icon.size=24&icon.color=%23e3e3e3&icon.style=Rounded&icon.set=Material+Symbols)); 
-- [ ] Resettare lo stile globale in `styles.scss` per avere una base pulita su cui lavorare, ad esempio:
+- [x] Creare una cartella `images` dentro `public` per le immagini statiche valide per tutte le configurazioni di gioco, nello specifico le icone che andranno inserite in un'altra cartella chiamata `icons` dentro `images`;
+- [x] _Installare_ le Material Symbols Icons tramite link nell'head (link dinamico, style rounded, istruzioni [qui](https://fonts.google.com/icons?icon.size=24&icon.color=%23e3e3e3&icon.style=Rounded&icon.set=Material+Symbols)); 
+- [x] Resettare lo stile globale in `styles.scss` per avere una base pulita su cui lavorare, ad esempio:
 
 ```scss
 * {
@@ -31,10 +45,11 @@ html, body {
     font-family: 'Roboto', sans-serif;
 }
 ```
+- [x] Terminare configurazione su console firebase prima di procedere a collegare il progetto Angular tramite `firebase login` e `firebase init`. PRIMA di eseguire questi comandi assicurarsi di essere nella cartella di progetto, quindi appena fuori dalla cartella `src`;
+- [x] Build e Deploy su Firebase (`npm run host` se abbiamo aggiunto lo script in angular.json, altrimenti `firebase deploy --only hosting`).
 - [ ] Prima commit su main;
 - [ ] Nuovo branch `dev` per lo sviluppo delle funzionalità basato su main;
 - [ ] Nuovo branch `feature/landing-page` per sviluppare la landing page basato su `dev`;
-- [ ] Deploy su Firebase (`npm run host` se abbiamo aggiunto lo script in angular.json, altrimenti `firebase deploy --only hosting`).
 
 <u>Per ora ignorare responsive design.</u>
 
