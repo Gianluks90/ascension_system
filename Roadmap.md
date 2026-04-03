@@ -1,0 +1,132 @@
+# Roadmap
+###### v.1
+
+#### Versione 0.0.1 - Initial commit
+- [ ] Aggiornare Angular all'ultima versione disponibile;
+- [ ] Aggiornare Node.js all'ultima versione disponibile;
+- [ ] Creare una nuova app Angular con `ng new ascension-system --skip-tests`;
+- [ ] Creare un nuovo progetto Firebase per iniziare la configurazione;
+- [ ] Installare Firebase `npm i firebase`;
+- [ ] Installare FirebaseTools `npm i -g firebase-tools`;
+- [ ] (Opzionale) In angular.json aggiungere i comandi npm run `host` per deployare su Firebase (`firebase deploy --only hosting` per deployare online);
+- [ ] Creare cartelle necessarie dentro `src/app` per organizzare gli elementi: `components\ui`, `components\shared`, `services`, `models`, `pages`, `consts`;
+- [ ] Creare un file dentro `consts` chiamato `app-version.ts` per tenere traccia della versione dell'app. Al suo interno esportare una costante `APP_VERSION` con il numero di versione attuale dell'app;
+
+> È buona prassi nominare le costanti di questo genere con tutte le lettere maisucole e gli underscore al posto degli spazi, in questo modo è facile riconoscerle all'interno del codice e si capisce subito che si tratta di valori che non devono essere modificati.
+
+- [ ] Creare una cartella `images` dentro `public` per le immagini statiche valide per tutte le configurazioni di gioco, nello specifico le icone che andranno inserite in un'altra cartella chiamata `icons` dentro `images`;
+- [ ] _Installare_ le Material Symbols Icons tramite link nell'head (link dinamico, style rounded, istruzioni [qui](https://fonts.google.com/icons?icon.size=24&icon.color=%23e3e3e3&icon.style=Rounded&icon.set=Material+Symbols)); 
+- [ ] Resettare lo stile globale in `styles.scss` per avere una base pulita su cui lavorare, ad esempio:
+
+```scss
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+}
+```
+- [ ] Prima commit su main;
+- [ ] Nuovo branch `dev` per lo sviluppo delle funzionalità basato su main;
+- [ ] Nuovo branch `feature/landing-page` per sviluppare la landing page basato su `dev`;
+- [ ] Deploy su Firebase (`npm run host` se abbiamo aggiunto lo script in angular.json, altrimenti `firebase deploy --only hosting`).
+
+<u>Per ora ignorare responsive design.</u>
+
+#### Versione 0.0.2 - Landing page + UI components
+- [ ] Aggiornare versione dell'app nella costante dedicata;
+- [ ] Creare un nuovo componente dentro `pages` chiamato `landing-page` con `ng generate component pages/landing-page`;
+- [ ] Ripulire `app.component.html` da tutto eccetto che da `<router-outlet></router-outlet>`;
+- [ ] Nuova route '/' per la landing page e legare il nuovo componente a questa route;
+- [ ] _Wildcard_ route per reindirizzare a '/' in caso di route non trovata;
+- [ ] Installare Angular Material CDK `npm i @angular/cdk`;
+- [ ] Mostrare al centro della pagina il titolo "Ascension<sup>SYS</sup>" e l'`APP_VERSION` come sottotitolo (`import { APP_VERSION } from '../consts/app-version';`);
+- [ ] Creare un nuovo componente dentro `components/ui` chiamato `base-btn` con `ng generate component components/ui/base-btn`. Il componente prende in _input_: `label`, `icon` (opzionale), `fullWidth` (booleano, opzionale, default false), `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`;
+
+```typescript
+// esempio di input;
+public label = input<string>('missing-label');
+```
+
+- [ ] Creare un nuovo componente dentro `components/ui` chiamato `icon-btn` con `ng generate component components/ui/icon-btn`. Il componente prende in _input_: `icon`, `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`;
+
+>`Components/ui` lo usiamo per tutti quei componenti grafici che non hanno una logica specifica, tendenzialmente avranno tanti input per personalizzarli e un output `clicked` per gestirne il click. Qui dentro quindi vanno bene: bottoni, contenitori, card, ecc... L'importante è che inserendoli qui si abbia l'intenzione di riusarli in vari punti.
+
+- [ ] Inserire i due nuovi componenti nella pagina in alto a destra in un contenitore. Il `base-btn` con label "Accedi" e icona di "login", il `icon-btn` con icona "dark_mode", per ora non fanno nulla al click;
+- [ ] Commit su `feature/landing-page` e merge su `dev`, è possibile eliminare il branch `feature/landing-page` dopo il merge.
+
+> Normalmente ogni nuovo progetto nasce con una branch di origine chiamata `main` o `master` che viene usata per le release. Creando una branch `dev` basata su `main` possiamo sviluppare tutte le funzionalità su `dev` e fare merge su `main` solo quando vogliamo rilasciare una nuova versione stabile. Per ogni nuova funzionalità invece è buona pratica creare una branch dedicata basata su `dev`, in questo modo si mantiene la storia del progetto più pulita e organizzata. Faremo quindi una nuova branch per ogni funzionalità, la testeremo, la mergeremo su `dev` e alla fine quando avremo un numero sufficiente di funzionalità stabili faremo un merge da `dev` a `main` per rilasciare una nuova versione. Come nome usiamo `feature/nome-funzionalità` per identificare facilmente a cosa serve la branch, oppure `bugfix/nome-bug` per le correzioni di bug.
+
+- [ ] Deploy su Firebase;
+
+#### Versione 0.0.3 - Toggle theme
+- [ ] Creare due classi all'interno di `styles.scss` chiamate `.light-theme` e `.dark-theme` lasciandole temporaneamente vuote;
+- [ ] Creare un nuovo servizio dentro `services` chiamato `theme.service` con `ng generate service services/theme`. Il servizio avrà una proprietà `currentTheme` che può essere "light" o "dark", inizialmente impostata su "light". Il servizio avrà un metodo `toggleTheme()` che cambia il valore di `currentTheme` e aggiorna la classe del body di conseguenza. Il servizio avrà anche un metodo `applyTheme()` che applica la classe corretta al body in base al valore di `currentTheme`;
+- [ ] Torniamo nello `styles.scss` e definiamo in quelle due classi delle variabili CSS per i colori principali dell'app, più avanti definiremo ulteriori colori.
+
+```scss
+// Valori di default, se non viene applicato alcun tema o se qualcosa va in errore l'app avrà questi colori;
+:host {
+    --fg-color: #212121;
+    --bg-color: #efefef;
+
+    --btn-fg-color: #ffffff;
+    --btn-bg-color: #212121;
+}
+
+.light-theme {
+    --fg-color: #212121;
+    --bg-color: #efefef;
+
+    --btn-fg-color: #ffffff;
+    --btn-bg-color: #212121;
+
+    color: var(--fg-color);
+    background-color: var(--bg-color);
+}
+
+.dark-theme {
+    --fg-color: #ffffff;
+    --bg-color: #212121;
+
+    --btn-fg-color: #212121;
+    --btn-bg-color: #ffffff;
+
+    color: var(--fg-color);
+    background-color: var(--bg-color);
+}
+```
+
+> Regola da usare d'ora in poi per le variabili globali: -- seguito da, gerarchicamente, la categoria a cui appartiene l'elemento. Esempio: --btn-fg-color (button > foreground color);
+
+- [ ] Aggiorniamo lo stile dei componenti _ui_ per usare le variabili e non colori fissi la impostati;
+- [ ] Iniettare il servizio `ThemeService` nel `AppComponent` e chiamare il metodo `applyTheme()` all'interno del `ngOnInit()` per applicare il tema iniziale, questo assicura che quando l'app viene caricata venga applicato il tema corretto in base al valore di `currentTheme` (che salveremo anche su localStorage per mantenere la preferenza dell'utente);
+- [ ] Iniettare il servizio `ThemeService` anche nella `LandingPage` e collegare il metodo `toggleTheme()` al click del `icon-btn` per permettere all'utente di cambiare tema;
+- [ ] Nell'html della `LandingPage` l'icona del `icon-btn` deve cambiare in base al tema attivo, se il tema è "light" mostra l'icona "dark_mode", se il tema è "dark" mostra l'icona "light_mode";
+- [ ] Commit su `feature/toggle-theme` e merge su `dev`, è possibile eliminare il branch `feature/toggle-theme` dopo il merge.
+- [ ] Deploy su Firebase;
+
+#### Versione 0.0.4 - Responsive design + avviso full screen che le dimensioni dello schermo non sono sufficienti per giocare
+
+> Qui, anzichè seguire la prassi, non ci occuperemo di sviluppare un design al di sotto di 768px di larghezza. Quando l'app rileva le dimensioni inferiori, a tutto schermo, viene mostrato un avviso che il dispositivo va tenuto almeno in orizzontale o che è necessario usare uno schermo più grande. 
+
+- [ ] Creare un nuovo branch `feature/responsive-landing-page` basato su `dev`;
+- [ ] In `components/shared` creare un nuovo componente chiamato `full-screen-warning` con `ng generate component components/shared/full-screen-warning`. Il componente mostra un messaggio di avviso e un'icona, non ha input o output. Le sue regole di stile mettono al centro il messaggio e lo estendono a tutto schermo con sfondo scuro e gli danno uno z-index elevato per sovrapporsi a tutto il resto;
+
+> Non mettiamo il componente in `components/ui` perchè non è un componente che vogliamo riutilizzare in più punti, ma è un componente specifico per l'`app.component`, quindi lo mettiamo in `components/shared` per indicare che è un componente condiviso tra più pagine ma non necessariamente riutilizzabile in qualsiasi punto dell'app.
+
+- [ ] Nel costruttore di `AppComponent` iniettare il servizio `BreakpointObserver` di Angular CDK e usarlo per osservare le dimensioni dello schermo;
+- [ ] Creiamo una variabile chiamata `isMobile` di tipo boolean che viene aggiornata in base alle dimensioni dello schermo, se la larghezza è inferiore a 768px `isMobile` è true, altrimenti è false;
+- [ ] Nel template di `AppComponent` mostrare il componente `FullScreenWarning` se `isMobile` è true;
+
+```html
+@if(isMobile) {
+    <app-full-screen-warning></app-full-screen-warning>
+}
+```
+
