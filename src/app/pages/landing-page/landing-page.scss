@@ -1,0 +1,28 @@
+.landing-page-main-container {
+    width: 100%;
+    height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &>h1 {
+        font-size: 6rem;
+        font-weight: 700;
+    }
+
+    &>p {
+        opacity: 0.3;
+    }
+}
+
+.landing-actions-container {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}

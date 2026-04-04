@@ -1,7 +1,7 @@
 # Roadmap
 ###### v.1
 
-#### Versione 0.0.1 - Initial commit
+## Versione 0.0.1 - Initial commit
 - [x] Aggiornare Angular all'ultima versione disponibile;
 - [x] Aggiornare Node.js all'ultima versione disponibile;
 - [x] Creare una nuova app Angular con `ng new ascension-system --skip-tests`;
@@ -28,7 +28,7 @@ export class Firebase {
 
 > È buona prassi nominare le costanti di questo genere con tutte le lettere maisucole e gli underscore al posto degli spazi, in questo modo è facile riconoscerle all'interno del codice e si capisce subito che si tratta di valori che non devono essere modificati.
 
-- [x] Creare una cartella `images` dentro `public` per le immagini statiche valide per tutte le configurazioni di gioco, nello specifico le icone che andranno inserite in un'altra cartella chiamata `icons` dentro `images`;
+- [x] Creare una cartella `images` dentro `public` per le immagini statiche;
 - [x] _Installare_ le Material Symbols Icons tramite link nell'head (link dinamico, style rounded, istruzioni [qui](https://fonts.google.com/icons?icon.size=24&icon.color=%23e3e3e3&icon.style=Rounded&icon.set=Material+Symbols)); 
 - [x] Resettare lo stile globale in `styles.scss` per avere una base pulita su cui lavorare, ad esempio:
 
@@ -47,39 +47,59 @@ html, body {
 ```
 - [x] Terminare configurazione su console firebase prima di procedere a collegare il progetto Angular tramite `firebase login` e `firebase init`. PRIMA di eseguire questi comandi assicurarsi di essere nella cartella di progetto, quindi appena fuori dalla cartella `src`;
 - [x] Build e Deploy su Firebase (`npm run host` se abbiamo aggiunto lo script in angular.json, altrimenti `firebase deploy --only hosting`).
-- [ ] Prima commit su main;
-- [ ] Nuovo branch `dev` per lo sviluppo delle funzionalità basato su main;
-- [ ] Nuovo branch `feature/landing-page` per sviluppare la landing page basato su `dev`;
+- [x] Prima commit su main;
+- [x] Nuovo branch `dev` per lo sviluppo delle funzionalità basato su main;
+- [x] Nuovo branch `feature/landing-page` per sviluppare la landing page basato su `dev`;
 
 <u>Per ora ignorare responsive design.</u>
 
-#### Versione 0.0.2 - Landing page + UI components
-- [ ] Aggiornare versione dell'app nella costante dedicata;
-- [ ] Creare un nuovo componente dentro `pages` chiamato `landing-page` con `ng generate component pages/landing-page`;
-- [ ] Ripulire `app.component.html` da tutto eccetto che da `<router-outlet></router-outlet>`;
-- [ ] Nuova route '/' per la landing page e legare il nuovo componente a questa route;
-- [ ] _Wildcard_ route per reindirizzare a '/' in caso di route non trovata;
-- [ ] Installare Angular Material CDK `npm i @angular/cdk`;
-- [ ] Mostrare al centro della pagina il titolo "Ascension<sup>SYS</sup>" e l'`APP_VERSION` come sottotitolo (`import { APP_VERSION } from '../consts/app-version';`);
-- [ ] Creare un nuovo componente dentro `components/ui` chiamato `base-btn` con `ng generate component components/ui/base-btn`. Il componente prende in _input_: `label`, `icon` (opzionale), `fullWidth` (booleano, opzionale, default false), `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`;
+## Versione 0.0.2 - Landing page + UI components
+- [x] Aggiornare versione dell'app nella costante dedicata;
+- [x] Creare un nuovo componente dentro `pages` chiamato `landing-page` con `ng generate component pages/landing-page`;
+- [x] Ripulire `app.html` da tutto eccetto che da `<router-outlet></router-outlet>`;
+- [x] Nuova route dentro `app.routes.ts` '' (come stringa vuota) per la landing page e legare il nuovo componente a questa route;
+- [x] _Wildcard_ route per reindirizzare a '' in caso di route non trovata;
 
 ```typescript
-// esempio di input;
-public label = input<string>('missing-label');
+// esempio di routes;
+export const routes: Routes = [
+    {
+        path: '',
+        loadComponent: () => import('./pages/landing-page/landing-page').then(m => m.LandingPage)
+    },
+    {
+        path: '**',
+        redirectTo: ''
+    }
+];
 ```
 
-- [ ] Creare un nuovo componente dentro `components/ui` chiamato `icon-btn` con `ng generate component components/ui/icon-btn`. Il componente prende in _input_: `icon`, `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`;
+- [x] Installare Angular Material CDK `npm i @angular/cdk`;
+- [x] Mostrare al centro della pagina il titolo "Ascension<sup>SYS</sup>" e l'`APP_VERSION` come sottotitolo (`import { APP_VERSION } from '../consts/app-version';`);
+- [x] Creare un nuovo componente dentro `components/ui` chiamato `base-btn` con `ng generate component components/ui/base-btn`. Il componente prende in _input_: `label`, `icon` (opzionale), `fullWidth` (booleano, opzionale, default false), `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`. Compilare anche il template con un `button` che mostra la label e l'icona se presente, e che chiama `handleClick()` al click. Il bottone deve essere disabilitato se `disabled` è true e deve occupare tutta la larghezza del contenitore se `fullWidth` è true;
+
+```typescript
+// esempio di input e output per il componente base-btn;
+public label = input<string>('missing-label');
+public clicked = output<void>();
+```
+
+- [x] Creare un nuovo componente dentro `components/ui` chiamato `icon-btn` con `ng generate component components/ui/icon-btn`. Il componente prende in _input_: `icon`, `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`. Compilare anche il template con un `button` che mostra la label e l'icona se presente, e che chiama `handleClick()` al click. Il bottone deve essere disabilitato se `disabled` è true;
 
 >`Components/ui` lo usiamo per tutti quei componenti grafici che non hanno una logica specifica, tendenzialmente avranno tanti input per personalizzarli e un output `clicked` per gestirne il click. Qui dentro quindi vanno bene: bottoni, contenitori, card, ecc... L'importante è che inserendoli qui si abbia l'intenzione di riusarli in vari punti.
 
-- [ ] Inserire i due nuovi componenti nella pagina in alto a destra in un contenitore. Il `base-btn` con label "Accedi" e icona di "login", il `icon-btn` con icona "dark_mode", per ora non fanno nulla al click;
-- [ ] Commit su `feature/landing-page` e merge su `dev`, è possibile eliminare il branch `feature/landing-page` dopo il merge.
+- [x] Inserire i due nuovi componenti nella pagina in alto a destra in un contenitore. Il `base-btn` con label "Accedi" e icona di "login", il `icon-btn` con icona "dark_mode", per ora non fanno nulla al click;
 
 > Normalmente ogni nuovo progetto nasce con una branch di origine chiamata `main` o `master` che viene usata per le release. Creando una branch `dev` basata su `main` possiamo sviluppare tutte le funzionalità su `dev` e fare merge su `main` solo quando vogliamo rilasciare una nuova versione stabile. Per ogni nuova funzionalità invece è buona pratica creare una branch dedicata basata su `dev`, in questo modo si mantiene la storia del progetto più pulita e organizzata. Faremo quindi una nuova branch per ogni funzionalità, la testeremo, la mergeremo su `dev` e alla fine quando avremo un numero sufficiente di funzionalità stabili faremo un merge da `dev` a `main` per rilasciare una nuova versione. Come nome usiamo `feature/nome-funzionalità` per identificare facilmente a cosa serve la branch, oppure `bugfix/nome-bug` per le correzioni di bug.
 
-- [ ] Deploy su Firebase;
+- [ ] Deploy in anteprima su Firebase creando in `package.json` un nuovo script `preview` che lancia il seguente comando: `npm run build && firebase hosting:channel:deploy preview --expires 1d`;
 
-#### Versione 0.0.3 - Toggle theme
+> Firebase mette a disposizione dei _canali di anteprima_ per evitare di effettuare il deploy di un errore _sull'ambiente di produzione_, in questo modo è possibile testare una nuova implementazione in un ambiente sicuro. Al termine dell'operazione viene rilasciata nel terminale una url temporanea (nel nostro caso dalla durata di 24h).
+
+- [ ] Testare le modifiche in anteprima e se tutto funziona correttamente procedere al deploy su produzione.
+- [ ] Commit su `feature/landing-page` e merge su `dev`, è possibile eliminare il branch `feature/landing-page` dopo il merge.
+
+## Versione 0.0.3 - Toggle theme
 - [ ] Creare due classi all'interno di `styles.scss` chiamate `.light-theme` e `.dark-theme` lasciandole temporaneamente vuote;
 - [ ] Creare un nuovo servizio dentro `services` chiamato `theme.service` con `ng generate service services/theme`. Il servizio avrà una proprietà `currentTheme` che può essere "light" o "dark", inizialmente impostata su "light". Il servizio avrà un metodo `toggleTheme()` che cambia il valore di `currentTheme` e aggiorna la classe del body di conseguenza. Il servizio avrà anche un metodo `applyTheme()` che applica la classe corretta al body in base al valore di `currentTheme`;
 - [ ] Torniamo nello `styles.scss` e definiamo in quelle due classi delle variabili CSS per i colori principali dell'app, più avanti definiremo ulteriori colori.
@@ -126,7 +146,7 @@ public label = input<string>('missing-label');
 - [ ] Commit su `feature/toggle-theme` e merge su `dev`, è possibile eliminare il branch `feature/toggle-theme` dopo il merge.
 - [ ] Deploy su Firebase;
 
-#### Versione 0.0.4 - Responsive design + avviso full screen che le dimensioni dello schermo non sono sufficienti per giocare
+## Versione 0.0.4 - Responsive design + avviso full screen che le dimensioni dello schermo non sono sufficienti per giocare
 
 > Qui, anzichè seguire la prassi, non ci occuperemo di sviluppare un design al di sotto di 768px di larghezza. Quando l'app rileva le dimensioni inferiori, a tutto schermo, viene mostrato un avviso che il dispositivo va tenuto almeno in orizzontale o che è necessario usare uno schermo più grande. 
 
