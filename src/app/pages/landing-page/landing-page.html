@@ -3,7 +3,7 @@
     <p>v. {{ appVersion }}</p>
 
     <div class="landing-actions-container">
-        <app-icon-btn icon="dark_mode"></app-icon-btn>
+        <app-icon-btn [icon]="themeService.themeIcon" (clicked)="toggleTheme()"></app-icon-btn>
         <app-base-btn label="Accedi" icon="login"></app-base-btn>
     </div>
 </div>

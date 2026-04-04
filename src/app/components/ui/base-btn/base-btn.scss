@@ -4,8 +4,8 @@ button {
     justify-content: center;
     gap: 12px;
 
-    background-color: #212121;
-    color: white;
+    background-color: var(--btn-bg-color);
+    color: var(--btn-fg-color);
     border: 1px solid #212121;
     border-radius: 8px;
     padding: 4px 12px;
@@ -18,8 +18,8 @@ button.full-width {
 }
 
 button:disabled {
-    background-color: lightgray;
-    color: #666;
+    background-color: var(--btn-bg-muted-color);
+    color: var(--btn-fg-muted-color);
     opacity: 0.7;
     border: none;
     cursor: not-allowed;

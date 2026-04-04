@@ -1,3 +1,11 @@
+:host {
+    --fg-color: #212121;
+    --bg-color: #efefef;
+
+    --btn-fg-color: #ffffff;
+    --btn-bg-color: #212121;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -18,4 +26,32 @@ body {
         'wght' 400,
         'GRAD' 0,
         'opsz' 24
+}
+
+// THEMES
+
+.light-theme {
+    --fg-color: #212121;
+    --bg-color: #efefef;
+
+    --btn-fg-color: #ffffff;
+    --btn-fg-muted-color: #666;
+    --btn-bg-color: #212121;
+    --btn-bg-muted-color: lightgray;
+
+    color: var(--fg-color);
+    background-color: var(--bg-color);
+}
+
+.dark-theme {
+    --fg-color: #ffffff;
+    --bg-color: #212121;
+
+    --btn-fg-color: #212121;
+    --btn-fg-muted-color: #666;
+    --btn-bg-color: #ffffff;
+    --btn-bg-muted-color: #434343;
+
+    color: var(--fg-color);
+    background-color: var(--bg-color);
 }
