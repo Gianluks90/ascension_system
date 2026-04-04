@@ -74,7 +74,6 @@ export const routes: Routes = [
 ];
 ```
 
-- [x] Installare Angular Material CDK `npm i @angular/cdk`;
 - [x] Mostrare al centro della pagina il titolo "Ascension<sup>SYS</sup>" e l'`APP_VERSION` come sottotitolo (`import { APP_VERSION } from '../consts/app-version';`);
 - [x] Creare un nuovo componente dentro `components/ui` chiamato `base-btn` con `ng generate component components/ui/base-btn`. Il componente prende in _input_: `label`, `icon` (opzionale), `fullWidth` (booleano, opzionale, default false), `disabled` (booleano, opzionale, default false) e _output_: `clicked`. Il componente ha una sola funzione `handleClick()` che emette l'evento `clicked`. Compilare anche il template con un `button` che mostra la label e l'icona se presente, e che chiama `handleClick()` al click. Il bottone deve essere disabilitato se `disabled` è true e deve occupare tutta la larghezza del contenitore se `fullWidth` è true;
 
@@ -108,28 +107,28 @@ public clicked = output<void>();
 - [x] Creare un nuovo servizio dentro `services` chiamato `theme.service` con `ng generate service services/theme`. Il servizio avrà una proprietà `_currentTheme` che può essere "light" o "dark", inizialmente impostata su "light". Il servizio avrà un metodo pubblico `toggleTheme()` che cambia il valore di `_currentTheme` e aggiorna la classe del body di conseguenza. Il servizio avrà anche un metodo privato `applyTheme()` che applica la classe corretta al body in base al valore di `_currentTheme` e la setta anche nel _localStorage_. Per agevolare il tutto utilizzeremo un _getter_ e un _setter_ lasciando tutto il resto privato;
 
 ```typescript
-    private _currentTheme: "light" | "dark" = "light";
-    get currentTheme() {
-        return this._currentTheme;
-    }
+private _currentTheme: "light" | "dark" = "light";
+get currentTheme() {
+    return this._currentTheme;
+}
 
-    set currentTheme(value: "light" | "dark") {
-        this._currentTheme = value;
-        this.applyTheme();
-    }
+set currentTheme(value: "light" | "dark") {
+    this._currentTheme = value;
+    this.applyTheme();
+}
 
-    private applyTheme(): void {
-        const body = document.body;
-        if (this.currentTheme === "light") {
-            body.classList.add("light-theme");
-            body.classList.remove("dark-theme");
-            localStorage.setItem("theme", "light");
-        } else {
-            body.classList.add("dark-theme");
-            body.classList.remove("light-theme");
-            localStorage.setItem("theme", "dark");
-        }
-  }
+private applyTheme(): void {
+    const body = document.body;
+    if (this.currentTheme === "light") {
+        body.classList.add("light-theme");
+        body.classList.remove("dark-theme");
+        localStorage.setItem("theme", "light");
+    } else {
+        body.classList.add("dark-theme");
+        body.classList.remove("light-theme");
+        localStorage.setItem("theme", "dark");
+    }
+}
 ```
 
 <u>Lo sapevi che pui _indentare_ il codice in VSCode automaticamente? Basta selezionare tutto e poi digitare la combinazione Cmd, K, F.</u>
@@ -210,24 +209,41 @@ button {
 > Notare che `icon` ora è _bindato_ (bind) a `themeIcon` tramite le parentesi quadre, questo permette di aggiornare dinamicamente l'icona in base al tema attivo. Un valore statico invece verrebbe passato, come abbiamo fatto finora, senza parentesi.
 
 - [x] Deploy in anteprima su Firebase e testare la funzionalità, se tutto funziona correttamente procedere al deploy su produzione.;
-- [ ] Commit su `feature/toggle-theme` e merge su `dev`, è possibile eliminare il branch `feature/toggle-theme` dopo il merge.
+- [x] Commit su `feature/toggle-theme` e merge su `dev`, è possibile eliminare il branch `feature/toggle-theme` dopo il merge.
 
 ## Versione 0.0.4 - Responsive design + avviso full screen che le dimensioni dello schermo non sono sufficienti per giocare
 
 > Qui, anzichè seguire la prassi, non ci occuperemo di sviluppare un design al di sotto di 768px di larghezza. Quando l'app rileva le dimensioni inferiori, a tutto schermo, viene mostrato un avviso che il dispositivo va tenuto almeno in orizzontale o che è necessario usare uno schermo più grande. 
 
-- [ ] Creare un nuovo branch `feature/responsive-landing-page` basato su `dev`;
-- [ ] In `components/shared` creare un nuovo componente chiamato `full-screen-warning` con `ng generate component components/shared/full-screen-warning`. Il componente mostra un messaggio di avviso e un'icona, non ha input o output. Le sue regole di stile mettono al centro il messaggio e lo estendono a tutto schermo con sfondo scuro e gli danno uno z-index elevato per sovrapporsi a tutto il resto;
+- [x] Creare un nuovo branch `feature/responsive-warning-message` basato su `dev`;
+- [x] In `components/shared` creare un nuovo componente chiamato `full-screen-warning` con `ng generate component components/shared/full-screen-warning`. Il componente mostra un messaggio di avviso e un'icona, non ha input o output. Le sue regole di stile mettono al centro il messaggio e lo estendono a tutto schermo con sfondo scuro e gli danno uno z-index elevato per sovrapporsi a tutto il resto;
 
-> Non mettiamo il componente in `components/ui` perchè non è un componente che vogliamo riutilizzare in più punti, ma è un componente specifico per l'`app.component`, quindi lo mettiamo in `components/shared` per indicare che è un componente condiviso tra più pagine ma non necessariamente riutilizzabile in qualsiasi punto dell'app.
+> Non mettiamo il componente in `components/ui` perchè non è un componente che vogliamo riutilizzare in più punti, ma è un componente specifico per l'`app.ts`, quindi lo mettiamo in `components/shared` per indicare che è un componente condiviso tra più pagine ma non necessariamente riutilizzabile in qualsiasi punto dell'app.
 
-- [ ] Nel costruttore di `AppComponent` iniettare il servizio `BreakpointObserver` di Angular CDK e usarlo per osservare le dimensioni dello schermo;
-- [ ] Creiamo una variabile chiamata `isMobile` di tipo boolean che viene aggiornata in base alle dimensioni dello schermo, se la larghezza è inferiore a 768px `isMobile` è true, altrimenti è false;
-- [ ] Nel template di `AppComponent` mostrare il componente `FullScreenWarning` se `isMobile` è true;
+- [x] Creare due nuove variabili CSS in `styles.scss` per il colore dell'icona di errore: `--warning-color` e `--error-color` (rispettivamente: goldenrod e crimson);
+- [x] Installare Angular Material CDK `npm i @angular/cdk` (una libreria di comportamenti e funzionalità che agevolano nello sviluppo, tutto ciò che fornisce può essere creato anche con del semplice javascript ma è complesso, risparmia tempo e insegna ad utilizzare elementi altrui);
+- [x] Creiamo un _signal_ booleano `isMobile` in `app.ts` che verrà settato a true quando le dimensioni dello schermo sono inferiori a 768px di larghezza, e a false altrimenti;
+
+> Un signal è un nuovo tipo di variabile introdotta in Angular di recente e permette di gestire lo stato in modo più semplice e performante. A differenza delle normali variabili, i signal sono reattivi, quindi quando il loro valore cambia, tutte le parti dell'app che dipendono da quel signal vengono aggiornate automaticamente. Per creare un signal basta importare `signal` da `@angular/core` e usarlo come una normale variabile, ma con la differenza che è una funzione che accetta un valore iniziale e restituisce un oggetto con il valore attuale e un metodo per aggiornarlo:
+
+```typescript
+// esempio di signal booleano;
+public isMobile = signal<boolean>(false);
+```
+- [x] Nel costruttore di `app.ts` iniettare il servizio `BreakpointObserver` di Angular CDK e usarlo per osservare le dimensioni dello schermo;
+
+```typescript
+this.bo.observe('(max-width: 768px)').subscribe(result => {
+  this.isMobile.set(result.matches);
+});
+```
+- [x] Nel template di `AppComponent` mostrare il componente `FullScreenWarning` se `isMobile` è true. Attenzione che per usare un signal non ci si deve dimenticare della coppia di parentesi tonde;
 
 ```html
-@if(isMobile) {
+@if(isMobile()) {
     <app-full-screen-warning></app-full-screen-warning>
 }
 ```
+- [x] Deploy in anteprima su Firebase e testare la funzionalità, se tutto funziona correttamente procedere al deploy su produzione (per questo test provare davvero ad aprire l'app da uno smartphone e a ruotare lo schermo per verificare che il messaggio venga rimosso correttamente);
+- [x] Commit su `feature/responsive-warning-message` e merge su `dev`, è possibile eliminare il branch `feature/responsive-warning-message` dopo il merge.
 
