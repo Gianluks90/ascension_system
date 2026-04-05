@@ -65,7 +65,7 @@ html, body {
 export const routes: Routes = [
     {
         path: '',
-        loadComponent: () => import('./pages/landing-page/landing-page').then(m => m.LandingPage)
+        loadComponent: () => import('./pages/landing-page').then(m => m.LandingPage)
     },
     {
         path: '**',
@@ -330,5 +330,219 @@ public close(): void {
 
 <u>Ogni elemento del cdk ha una sua pagina di documentazione ufficiale che spiega come utilizzarlo e quali opzioni sono disponibili. Per esempio ecco la pagina dedicata al `Dialog` ([clicca qui](https://material.angular.dev/cdk/dialog/overview)). Sotto _API_ è spiegato come importare l'elemento e cosa espone, sotto _Examples_ sono mostrati alcuni esempi pratici.</u>
 
-- [x] Deploy in anteprima;
+- [x] Deploy in anteprima + deploy in _prod_ dopo la verifica;
 - [x] Commit su `feature/dialog-wrapper-auth` e merge su `dev`, è possibile eliminare il branch `feature/dialog-wrapper-auth` dopo il merge.
+
+## Versione 0.0.6 - /home + autenticazione
+
+- [x] Aggiornare versione dell'app nella costante dedicata;
+- [x] Creare un nuovo branch `feature/authentication` basato su `dev`;
+- [x] Creare un nuovo componente dentro `components/pages` chiamato `HomePage` con `ng g c components/pages/home-page`, per ora lasciamolo vuoto;
+- [x] Creare una nuova route con path `/home` a cui arrivare quando ci si autentica e collegarci il componente `HomePage`;
+
+```typescript
+{
+    path: 'home',
+    loadComponent: () => import('./pages/home-page').then(m => m.HomePage)
+}
+```
+- [x] Configurare su Firebase Console l'Autenticazione abilitando il provider _email/password_. Aggiungiamo anche manualmente un utente che ci servirà come test: immettiamo `admin@email.com` e `test1234` come credenziali;
+
+> Firebase mette a disposizione diversi _provider_ (attori che si occupano di gestire le credenziali, controllarle e restituire un token di conferma in caso di successo). Il più semplice e gestibile è _email/password_ mentre il più automatico è sicuramente Google.
+
+- [x] Creiamo dentro la cartella `models` un nuovo file chiamato `UserData.ts` (avremo potuto chiamarlo semplicemente User ma è troppo generico - anche Firebase espone un modello con quel nome per esempio - quindi per non sbagliare a sceglierlo successivamente diamogli un nome più specifico);
+
+> Un _modello_ è un'interfaccia o una classe che permette di dare forma a qualcosa. Il nostro SysUser avrà mappato dentro di esso le proprità tipiche di un utente (emai, nickname, ecc...).
+
+- [x] Modellare la nuova interfaccia inserendo all'interno le informazioni base che vogliamo definire per l'utente:
+
+```typescript
+export interface UserData {
+    uid: string;
+    nickname: string;
+    email: string;
+    createdAt: Timestamp; // fornito da Firebase
+    updatedAt: Timestamp;
+    photoURL?: string;
+    playmatURL?: string;
+    statistics?: any; // Ci servirà più avanti
+}
+```
+> Un'interfaccia è solo uno scheletro _statico_ che può ospitare dati automaticamente solo se vengono rinvenuti dalla _fonte di verità_ scritti allo stesso modo. Se scarichiamo da Firebase un utente che non ha _nickname_ o se lo ha scritto come _nickName_ questo non verrà mappato. Una classe invece è un costrutto più potente che può ospirare anche dei metodi e un costruttore.
+
+- [x] Creare un nuovo signal nel service `Firebase.ts` rappresentante lo user, utilizziamo per _tipizzare_ l'interfaccia creata poco fa ma per non far _arrabbiara_ Typescript dobbiamo anche inizializzare il signal con qualcosa e se lo inizializziamo a null dobbiamo specificare che può assure anche questo _tipo_;
+
+```typescript
+private _user = signal<UserData | null>(null);
+```
+- [x] Nel costruttore dello stesso service serviamoci di `getAuth()`, un metodo esposto da `firebase/auth` per verificare l'autenticazione. Questo metodo restituisce un tipo proprietario `Auth` da cui possiamo chiamare un secondo metodo `onAuthStateChanged()` che ci fornisce un'osservabile di quello che avviene nell'autenticazione. Questo metodo sarà la nostra chiave per sapere quando "siamo dentro", perchè reagisce, come dice il nome, al cambio di stato dell'auth;
+
+```typescript
+// da inserire nel blocco del costruttore;
+getAuth(app).onAuthStateChanged(async user => {
+    if (user) {
+        console.log(user);
+    }
+});
+```
+
+- [x] Creare un nuovo service `Auth.ts` dentro la cartella `services` con `ng g s services/auth`;
+- [x] Il service appena creato avrà tre metodi: `createWithEmailAndPassword()` , `loginWithEmailAndPassword()` e `logout()`;
+
+```typescript
+// fuori dal service, appena sopra il decoratore @Injectable;
+interface GrantedCredential {
+    email: string;
+    password: string;
+}
+
+// dentro il service;
+public createWithEmailAndPassword(credential: GrantedCredential) {
+    // TODO: Da implementare nella prossima versione;
+}
+public loginWithEmailAndPassword(credential: GrantedCredential) {}
+
+public logout() {
+    getAuth().signOut();
+};
+```
+
+> Immettiamo un nome così specifico per questo metodo e non un semplice `create()` o `login()` per prepararci all'eventualità di avere più modi per autenticarsi, questa è sempre buona prassi (aspettarsi eventuali evoluzioni);
+
+- [x] Iniettiamo nel costruttore di `landing-page` il service `Auth` per poter accedere ai metodi da quel componente;
+- [x] Nello stesso componente abbiamo già scritto in precedenza il metodo che apre la `authDialog` che ha un subscribe che ascolta la chiusura dell'elemento. In questo punto inseriremo la logica di autenticazione ma solo se dalla dialog arriva un messaggio di conferma. Aggiorniamo il metodo in questo modo:
+
+```typescript
+public openAuthDialog(): void {
+    const dialogRef = this.dialog.open(AuthDialog, {
+      ...DIALOGS_CONFIG
+    });
+
+    dialogRef.closed.subscribe((result: any) => {
+        if (!result?.success) return;
+        this.authService.loginWithEmailAndPassword(result?.credentials);
+    });
+}
+```
+
+- [x] Passiamo al componente `AuthDialog` dove saranno inseriti dall'utente gli elementi che ci servono per tentare l'autenticazione: email e password. Importiamo nel componente, tramite `imports` in alto: `ReactiveFormsModule` (la libreria di Angular per gestire i form in maniera intelligente);
+- [x] Creiamo una nuova variabile chiamata `authForm` di tipo `FormGroup`, iniettiamo nel costruttore `FormBuilder` (un servizio che ci aiuta a creare i form) e usiamolo per inizializzare `authForm` con due campi: `email` e `password`, entrambi di tipo stringa e con validazione di required (obbligatori);
+
+```typescript
+public authForm: FormGroup;
+constructor(private dialogRef: DialogRef<AuthDialogResult>, private fb: FormBuilder) {
+    this.authForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    })
+  }
+```
+
+> Il _FormGroup_ è un oggetto molto potente e facile da configurare che si aspetta delle proprietà chiamate _controls_ che hanno bisogno di un valore ed eventualmente dei _validatori_. Questi ultimi impediscono al form di essere valido finchè tutte le loro condizioni non sono soddisfatte, se non si fornisce un _Validator_ il campo può anche non essere compilato.
+
+- [x] Creiamo un nuovo metodo `submit()` che si occuperà di prendere i dati dal form, passarli al metodo di login del service `Auth` e chiudere la dialog in caso di successo;
+
+```typescript
+public submit(): void {
+    if (this.authForm.invalid) return;
+    const result = this.authForm.value;
+    this.dialogRef.close({
+        success: true,
+        credentials: result
+    })
+}
+```
+
+- [x] Aggiorniamo il template di `AuthDialog` con il form e i due input per email e password, infine colleghiamo al tasto di conferma il metodo `submit()`;
+
+```html
+<form [formGroup]="authForm">
+    <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" formControlName="email" type="email" placeholder="Inserisci la tua email">
+    </div>
+    <div class="form-field">
+        <label for="password">Password</label>
+        <input id="password" formControlName="password" type="password" placeholder="Inserisci la tua password">
+    </div>
+</form>
+
+<app-base-btn dialog-action label="Accedi" icon="login" (clicked)="submit()" [disabled]="authForm.invalid"></app-base-btn>
+
+```
+
+- [x] In `styles.scss` definiamo uno stile globale per il `.form-field` in modo che tutti gli input che utilizzeremo mai saranno identici;
+
+```scss
+.form-field {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    gap: 8px;
+
+    &>label {
+        font-size: 14px;
+        color: var(--fg-color);
+        font-weight: bold;
+    }
+
+    &>input {
+        padding: 8px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background-color: var(--btn-bg-muted-color);
+        color: var(--fg-color);
+
+        &:focus {
+            outline: none;
+            border-color: var(--btn-bg-color);
+        }
+    }
+}
+```
+- [x] Nel metodo `loginWithEmailAndPassword()` del service `Auth` proviamo a _stampare_ (con un `console.log()`) le credenziali che dovrebbero giungere una volta premuto "Accedi" nella dialog, effettuare un test per verificare che tutto funzioni;
+- [x] Implementiamo la logica di autenticazione con Firebase nel metodo di cui sopra secondo documentazione ufficiale:
+
+```typescript
+public loginWithEmailAndPassword(credential: GrantedCredential) {
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, credential.email, credential.password).then((userCredential) => {
+      // Signed in 
+      const user = userCredential.user;
+      console.log('Login successful:', user);
+    }).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error('Login failed:', errorCode, errorMessage);
+    });
+}
+```
+- [x] Tentare l'autenticazione tenendo sott'occhio la console per verificare che tutto funzioni. Immettere prima le credenziali errate per verificare che venga restituito un errore, poi quelle corrette per verificare che venga restituito l'utente;
+
+> `signInWithEmailAndPassword()` è un metodo esposto da Firebase (asincrono) che accetta le credenziali e restituisce la _promise_ di un utente in caso di successo. Le `Promise` sono un costrutto di JavaScript che rappresenta un'operazione asincrona che può essere completata con successo o con un errore. Per gestire il risultato di una promise si usano i metodi `then()` e `catch()`, il primo viene eseguito quando la promise viene risolta con successo, il secondo quando viene rigettata con un errore. Con il test precedente dovremo aver innescato entrambi almeno una volta.
+
+<u>Occorre ricordare che Firebase è capace di tenere viva la sessione di autenticazione quindi ad ogni riavvio della pagina, il `console.log()` che abbiamo inserito nel metodo `onAuthStateChanged()` ci mosterà in console in caso di successo, l'utente. Attualmente, non abbiamo ancora inserito un metodo di _logout_.</u>
+
+- [x] Quando l'utente si autentica la route deve cambiare e portarci ad `/home`. Torniamo nel `subscribe` della chiusura della _dialog_ in `landing-page.ts` e aggiungiamo la logica per far ciò. Trasformiamo il metodo `loginWithEmailAndPassword` del nostro service `Auth.ts` in una _promise_ rendendolo così un metodo asincrono dopodichè aggiungiamo un `.then()` dove chiamiamo il metodo per effettuare infine il redirect alla pagina che ci interessa. Servirà un nuovo strumento da iniettare in `landing-page` ovvero `Router` che espone metodi per navigare;
+
+```typescript
+// Auth.ts 
+public async loginWithEmailAndPassword(credential: GrantedCredential): Promise<any> {
+    // ...
+  }
+
+// LandingPage.ts
+constructor(private dialog: Dialog, private authService: Auth, private router: Router) {}
+
+dialogRef.closed.subscribe((result: any) => {
+    if (!result?.success) return;
+    this.authService.loginWithEmailAndPassword(result?.credentials).then(() => {
+        this.router.navigate(['/home']);
+    })
+});
+```
+
+- [x] Deploy in anteprima + deploy in _prod_ dopo la verifica;
+- [x] Commit su `feature/authentication` e merge su `dev`, è possibile eliminare il branch `feature/authentication` dopo il merge.
+
+## Versione 0.0.7 - Auth guard + Home page

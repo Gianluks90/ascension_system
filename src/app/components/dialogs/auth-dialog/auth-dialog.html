@@ -1,6 +1,16 @@
 <app-dialog-wrapper title="Autenticazione">
     <p>Contenuto della dialog.</p>
+    <form [formGroup]="authForm">
+        <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" formControlName="email" type="email" placeholder="Inserisci la tua email">
+        </div>
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input id="password" formControlName="password" type="password" placeholder="Inserisci la tua password">
+        </div>
+    </form>
     
     <app-base-btn dialog-action label="Annulla" icon="close" (clicked)="close()"></app-base-btn>
-    <app-base-btn dialog-action label="Accedi" icon="login" [disabled]="true"></app-base-btn>
+    <app-base-btn dialog-action label="Accedi" icon="login" (clicked)="submit()" [disabled]="authForm.invalid"></app-base-btn>
 </app-dialog-wrapper>
