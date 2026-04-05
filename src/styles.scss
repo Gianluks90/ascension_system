@@ -5,6 +5,9 @@
     --btn-fg-color: #ffffff;
     --btn-bg-color: #212121;
 
+    --overlay-fg-color: #212121;
+    --overlay-bg-color: #efefef;
+
     --warning-color: goldenrod;
     --error-color: crimson;
 }
@@ -42,6 +45,9 @@ body {
     --btn-bg-color: #212121;
     --btn-bg-muted-color: lightgray;
 
+    --overlay-fg-color: #212121;
+    --overlay-bg-color: #efefef;
+
     --warning-color: goldenrod;
     --error-color: crimson;
 
@@ -58,9 +64,17 @@ body {
     --btn-bg-color: #ffffff;
     --btn-bg-muted-color: #434343;
 
+    --overlay-fg-color: #ffffff;
+    --overlay-bg-color: #212121;
+
     --warning-color: goldenrod;
     --error-color: crimson;
 
     color: var(--fg-color);
     background-color: var(--bg-color);
+}
+
+.dialog-backdrop {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.4);
 }

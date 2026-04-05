@@ -4,6 +4,6 @@
 
     <div class="landing-actions-container">
         <app-icon-btn [icon]="themeService.themeIcon" (clicked)="toggleTheme()"></app-icon-btn>
-        <app-base-btn label="Accedi" icon="login"></app-base-btn>
+        <app-base-btn label="Accedi" icon="login" (clicked)="openAuthDialog()"></app-base-btn>
     </div>
 </div>

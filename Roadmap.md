@@ -215,6 +215,7 @@ button {
 
 > Qui, anzichè seguire la prassi, non ci occuperemo di sviluppare un design al di sotto di 768px di larghezza. Quando l'app rileva le dimensioni inferiori, a tutto schermo, viene mostrato un avviso che il dispositivo va tenuto almeno in orizzontale o che è necessario usare uno schermo più grande. 
 
+- [x] Aggiornare versione dell'app nella costante dedicata;
 - [x] Creare un nuovo branch `feature/responsive-warning-message` basato su `dev`;
 - [x] In `components/shared` creare un nuovo componente chiamato `full-screen-warning` con `ng generate component components/shared/full-screen-warning`. Il componente mostra un messaggio di avviso e un'icona, non ha input o output. Le sue regole di stile mettono al centro il messaggio e lo estendono a tutto schermo con sfondo scuro e gli danno uno z-index elevato per sovrapporsi a tutto il resto;
 
@@ -247,3 +248,87 @@ this.bo.observe('(max-width: 768px)').subscribe(result => {
 - [x] Deploy in anteprima su Firebase e testare la funzionalità, se tutto funziona correttamente procedere al deploy su produzione (per questo test provare davvero ad aprire l'app da uno smartphone e a ruotare lo schermo per verificare che il messaggio venga rimosso correttamente);
 - [x] Commit su `feature/responsive-warning-message` e merge su `dev`, è possibile eliminare il branch `feature/responsive-warning-message` dopo il merge.
 
+## Versione 0.0.5 - Dialog wrapper + apertura dialog di autenticazione
+
+- [x] Aggiornare versione dell'app nella costante dedicata;
+- [x] Creare un nuovo branch `feature/dialog-wrapper-auth` basato su `dev`;
+- [x] Creare un nuovo componente dentro `components/ui` chiamato `dialog-wrapper` con `ng g c components/ui/dialog-wrapper`. Il componente prenderà in input un `title` (stringa) e `hideActions` (boolean, opzionale, default false). Nel template faremo largo uso di `ng-content` (un _placeholder_) per permettere di inserire qualsiasi contenuto all'interno della dialog;
+
+> Creare questo componente _wrapper_ ci aiuta a definire una singola volta l'aspetto di un componente senza preoccuparci di quello che andremo a mettere al suo interno. Man mano questo componente si può personalizzare man mano per renderlo più utile ad ogni evenenienza. Ecco un esempio:
+>```html
+><div class="dialog-wrapper-container">
+>    <div class="dialog-wrapper-header">
+>       <h1>{{title()}}</h1>
+>    </div>
+>    <div class="dialog-wrapper-content">
+>        <ng-content></ng-content>
+>    </div>
+>    @if (!hideActions()) {
+>    <div class="dialog-wrapper-actions">
+>        <ng-content select="[dialog-action]"></ng-content>
+>    </div>
+>    }
+></div>
+>```
+
+- [x] Creare una nuova cartella dentro components chiamata `dialogs`;
+- [x] Creare un nuovo componente dentro `components/dialogs/auth-dialog` con `ng g c components/dialogs/auth-dialog`, per adesso resterà vuoto.
+- [x] Creiamo dentro `consts` un nuovo file chiamato `dialogsConfig.ts` in cui inseriamo alcuni parametri da importare nel metodo di apertura, delle opzioni che definiremo così una sola volta.
+
+```typescript
+export const DIALOGS_CONFIG = {
+    width: '90%',
+    maxWidth: '540px',
+    maxHeight: '80vh',
+    backdropClass: 'dialog-backdrop',
+    autoFocus: false
+};
+```
+- [x] In `styles.scss` definiamo la classe `dialog-backdrop` con due semplici regole per dare allo sfondo un colore scuro molto trasparente e un effetto blur; 
+- [x] Andiamo adesso a `landing-page.ts` per iniettare il `Dialog` (angular/cdk/dialog) che ci permetterà di aprire, chiudere e interagire con le dialog. Sempre qui creiamo una funzione `openAuthDialog()` in cui effettuare questa operazione. Diamo questo metodo al `(clicked)` (il nostro evento - _output_ - personalizzato) del bottone "Accedi" che abbiamo creato in precedenza. Allo stato attuale però il metodo non fa nulla, implementiamolo;
+
+```typescript
+public openAuthDialog(): void {
+    const dialogRef = this.dialog.open(AuthDialog, {
+      ...DIALOGS_CONFIG
+    });
+
+    dialogRef.closed.subscribe((result) => {
+      console.log('Dialog closed with result:', result);
+    });
+}
+```
+
+> Il `Dialog` iniettato nel costruttore ci permette di usare il metodo `open()` a cui passiamo come primo argomento il componente da mostrare in vece alla dialog e come secondo delle opzioni. I _tre puntini_ inseriti di fronte alla costante sono un costrutto dal nome _spread operator_ e serve per prendere una ad una le proprietà di un oggetto e inserirle in uno nuovo (non è l'unico caso in cui usarlo). Sempre nel metodo infine ci _sottoscriviamo_ all'evento `closed` che viene emesso quando la dialog viene chiusa, possiamo così eseguire del codice al momento della chiusura. `Closed` è un _observable_ ovvero qualcosa che resta li e può essere ascoltato e acchiappato all'occorrenza con il `subscribe`.
+
+- [x] Testare l'apertura della dialog premendo su "Accedi", tutto è andato a buon fine se viene mostrato il paragrafo di default del componente aperto: 'auth-dialog works!' o qualcosa del genere.
+- [x] Aggiorniamo il componente `auth-dialog.ts` inserendo un metodo `close()` e nel suo template il `dialog-wrapper` dopodichè aggiorniamo anche lo stile del `dialog-wrapper`, ora molto semplice avendo alcuni elementi al suo interno;
+
+```html
+<app-dialog-wrapper title="Autenticazione">
+    <p>Contenuto della dialog.</p>
+    
+    <app-base-btn dialog-action label="Annulla" icon="close" (clicked)="close()"></app-base-btn>
+    <app-base-btn dialog-action label="Accedi" icon="login" [disabled]="true"></app-base-btn>
+</app-dialog-wrapper>
+```
+- [x] Ultimo passo, in `auth-dialog.ts`, definiamo l'interfaccia di risposta `AuthDialogResult`, iniettiamo il `DialogRef` (angular/cdk/dialog) e usiamolo per chiudere la dialog quando viene cliccato il bottone "Annulla";
+
+```typescript
+// fuori dal componente, appena sopra il decoratore @Component;
+interface AuthDialogResult {
+    success: boolean;
+}
+
+// dentro il componente;
+constructor(private dialogRef: DialogRef<AuthDialogResult>) {}
+
+public close(): void {
+    this.dialogRef.close({ success: false });
+}
+```
+
+<u>Ogni elemento del cdk ha una sua pagina di documentazione ufficiale che spiega come utilizzarlo e quali opzioni sono disponibili. Per esempio ecco la pagina dedicata al `Dialog` ([clicca qui](https://material.angular.dev/cdk/dialog/overview)). Sotto _API_ è spiegato come importare l'elemento e cosa espone, sotto _Examples_ sono mostrati alcuni esempi pratici.</u>
+
+- [x] Deploy in anteprima;
+- [x] Commit su `feature/dialog-wrapper-auth` e merge su `dev`, è possibile eliminare il branch `feature/dialog-wrapper-auth` dopo il merge.
