@@ -1,0 +1,9 @@
+<div class="header-container">
+     <span class="logo" [style.background-color]="'var(--accent-color)'" 
+    [style.mask]="'url(./images/brand/logo.svg) no-repeat center / contain'" 
+    [style.-webkit-mask]="'url(./images/brand/logo.svg) no-repeat center / contain'">
+    </span>
+    <h1>ascension<sup>SYS</sup></h1>
+    <app-icon-btn icon="dark_mode" (clicked)="toggleTheme()"></app-icon-btn>
+    <app-icon-btn icon="logout" (clicked)="logout()"></app-icon-btn>
+</div>

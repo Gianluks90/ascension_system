@@ -1,4 +1,4 @@
-:host {
+:root {
     --fg-color: #212121;
     --bg-color: #efefef;
 
@@ -10,6 +10,8 @@
 
     --warning-color: goldenrod;
     --error-color: crimson;
+
+    --accent-color: crimson;
 }
 
 * {

@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { Router } from "@angular/router";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 interface GrantedCredential {
@@ -10,6 +11,8 @@ interface GrantedCredential {
   providedIn: "root",
 })
 export class Auth {
+
+  constructor(private router: Router) {}
   public createWithEmailAndPassword(credential: GrantedCredential) {
     // TODO: Da implementare nella prossima versione;
   }
@@ -28,5 +31,6 @@ export class Auth {
 
   public logout() {
     getAuth().signOut();
+    this.router.navigate(['/']);
   };
 }

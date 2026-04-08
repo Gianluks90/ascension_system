@@ -137,7 +137,7 @@ private applyTheme(): void {
 
 ```scss
 // Valori di default, se non viene applicato alcun tema o se qualcosa va in errore l'app avrà questi colori;
-:host {
+:root {
     --fg-color: #212121;
     --bg-color: #efefef;
 
@@ -170,7 +170,7 @@ private applyTheme(): void {
 
 > Regola da usare d'ora in poi per le variabili globali: -- seguito da, gerarchicamente, la categoria a cui appartiene l'elemento. Esempio: --btn-fg-color (button > foreground color);
 
-- [x] Aggiorniamo lo stile dei componenti _ui_ per usare le variabili e non colori fissi la impostati (ora assumeranno i valori di _defaul_ ovvero quelli inseriti in `:host`);
+- [x] Aggiorniamo lo stile dei componenti _ui_ per usare le variabili e non colori fissi la impostati (ora assumeranno i valori di _defaul_ ovvero quelli inseriti in `:root`);
 
 ```scss
 // esempio di uso di una variabile CSS;
@@ -397,6 +397,7 @@ interface GrantedCredential {
 }
 
 // dentro il service;
+constructor(private router: Router) {}
 public createWithEmailAndPassword(credential: GrantedCredential) {
     // TODO: Da implementare nella prossima versione;
 }
@@ -404,6 +405,7 @@ public loginWithEmailAndPassword(credential: GrantedCredential) {}
 
 public logout() {
     getAuth().signOut();
+    this.router.navigate(['/']);
 };
 ```
 
@@ -546,3 +548,78 @@ dialogRef.closed.subscribe((result: any) => {
 - [x] Commit su `feature/authentication` e merge su `dev`, è possibile eliminare il branch `feature/authentication` dopo il merge.
 
 ## Versione 0.0.7 - Auth guard + Home page
+
+- [ ] Aggiornare versione dell'app nella costante dedicata;
+- [ ] Creare un nuovo branch `feature/auth-guard` basato su `dev`;
+
+> Ora che è presente un sistema di autenticazione possiamo impedire agli utenti non autenticati di accedere a determinate pagine. Per fare ciò, in Angular, possiamo servirci di un _guard_ ovvero un servizio che verifica _qualsiasi cosa_ e ci restituisce un booleano, nel nostro caso, inoltre ci farà navigare avanti o indietro in base al risultato.
+
+- [ ] Creare una nuova cartella chiamata `guards` dentro `src/app`;
+- [ ] Creare un nuovo guard chiamato `AuthGuard` con `ng g guard guards/auth`. Il guard implementa l'interfaccia `CanActivate` e al suo interno verifica se l'utente è autenticato tramite il service `Auth`, se lo è restituisce true altrimenti false;
+
+```typescript
+export const authGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+  const auth = getAuth();
+
+  return getCurrentUser(auth).then(user => {
+    if (user) {
+      return true;
+    } else {
+      router.navigate(['/']);
+      return false;
+    }
+  }).catch(error => {
+    log('Error checking auth state:', error);
+    router.navigate(['/']);
+    return false;
+  });
+
+  return true
+};
+
+function getCurrentUser(auth: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged((user: any) => {
+      unsubscribe(); // Unsubscribe immediately to avoid memory leaks
+      resolve(user);
+    }, reject);
+  });
+}
+```
+
+- [ ] Da adesso in avanti applichiamo questo guard a tutte le route che vogliamo proteggere da un utente non autenticato, partiamo dalla route `/home`, in questo modo:
+
+```typescript
+import { authGuard } from './guards/auth-guard';
+
+export const routes: Routes = [
+    // ... altre routes
+    {
+        path: 'home',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/home-page/home-page').then(m => m.HomePage)
+    }
+    // ... altre routes
+];
+```
+
+<u>Potrebbe essere necessario inserire in `app.ts` (nel costruttore) `getAuth().signOut()` perchè non abbiamo ancora un tasto di _logout_ per testare questa funzionalità.</u>
+
+- [ ] Creare un nuova cartella `brand` in `public/images` e inserire al suo interno il file `logo.svg` fornito;
+- [ ] Aggiungiamo una variabile CSS per il colore di _accento_ in `styles.scss`, impostiamo `--accent-color` a `crimson`, essendo valido per entrambi i temi basta inserire la variabile in `:root`;
+- [ ] Aggiorniamo `landing-page` per mostrare il logo sopra al titolo, utilizziamo `mask-image` per mostrare il logo con il colore del tema attivo;
+
+```html
+    <span class="logo" [style.background-color]="'var(--accent-color)'" 
+    [style.mask]="'url(./images/brand/logo.svg) no-repeat center / contain'" 
+    [style.-webkit-mask]="'url(./images/brand/logo.svg) no-repeat center / contain'">
+    </span>
+```
+
+> La regola `mask` funziona perfettamente in questo caso perchè il logo è monocromatico e noi possiamo usarlo come maschera e assegnare allo spazio che _ritaglia_ il colore che desideriamo, in questo caso il _colore di accento_.
+
+- [ ] Accedi e naviga automaticamente alla pagina `/home`;
+- [ ] Creare un nuovo componente `header` dentro `components/shared` con `ng g c components/shared/header`, questo componente sarà usato in tutte alcune pagine e conterrà, al momento: logo, titolo il tasto di cambio tema e tasto di logout;
+- [ ] Deploy in anteprima + deploy in _prod_ dopo la verifica;
+- [ ] Commit su `feature/auth-guard` e merge su `dev`, è possibile eliminare il branch `feature/auth-guard` dopo il merge.
