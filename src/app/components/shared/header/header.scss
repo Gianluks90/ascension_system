@@ -12,5 +12,9 @@
     h1 {
         font-size: 2rem;
         flex-grow: 1;
+
+        &>sup {
+            font-size: .7rem;
+        }
     }
 }

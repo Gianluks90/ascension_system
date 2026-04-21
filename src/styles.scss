@@ -1,4 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap');
+
 :root {
+    --font-family: "Fustat", sans-serif;
+
     --fg-color: #212121;
     --bg-color: #efefef;
 
@@ -18,14 +22,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-size: 16px;
+    font-family: var(--font-family);
 }
 
 html,
 body {
     width: 100%;
     height: 100%;
-    font-family: 'Roboto', sans-serif;
 }
 
 .material-symbols-rounded {

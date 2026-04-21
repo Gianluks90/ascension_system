@@ -547,15 +547,15 @@ dialogRef.closed.subscribe((result: any) => {
 - [x] Deploy in anteprima + deploy in _prod_ dopo la verifica;
 - [x] Commit su `feature/authentication` e merge su `dev`, è possibile eliminare il branch `feature/authentication` dopo il merge.
 
-## Versione 0.0.7 - Auth guard + Home page
+## Versione 0.0.7 - Auth guard + Home page + logout()
 
-- [ ] Aggiornare versione dell'app nella costante dedicata;
-- [ ] Creare un nuovo branch `feature/auth-guard` basato su `dev`;
+- [x] Aggiornare versione dell'app nella costante dedicata;
+- [x] Creare un nuovo branch `feature/auth-guard` basato su `dev`;
 
 > Ora che è presente un sistema di autenticazione possiamo impedire agli utenti non autenticati di accedere a determinate pagine. Per fare ciò, in Angular, possiamo servirci di un _guard_ ovvero un servizio che verifica _qualsiasi cosa_ e ci restituisce un booleano, nel nostro caso, inoltre ci farà navigare avanti o indietro in base al risultato.
 
-- [ ] Creare una nuova cartella chiamata `guards` dentro `src/app`;
-- [ ] Creare un nuovo guard chiamato `AuthGuard` con `ng g guard guards/auth`. Il guard implementa l'interfaccia `CanActivate` e al suo interno verifica se l'utente è autenticato tramite il service `Auth`, se lo è restituisce true altrimenti false;
+- [x] Creare una nuova cartella chiamata `guards` dentro `src/app`;
+- [x] Creare un nuovo guard chiamato `AuthGuard` con `ng g guard guards/auth`. Il guard implementa l'interfaccia `CanActivate` e al suo interno verifica se l'utente è autenticato tramite il service `Auth`, se lo è restituisce true altrimenti false;
 
 ```typescript
 export const authGuard: CanActivateFn = (route, state) => {
@@ -588,7 +588,7 @@ function getCurrentUser(auth: any): Promise<any> {
 }
 ```
 
-- [ ] Da adesso in avanti applichiamo questo guard a tutte le route che vogliamo proteggere da un utente non autenticato, partiamo dalla route `/home`, in questo modo:
+- [x] Da adesso in avanti applichiamo questo guard a tutte le route che vogliamo proteggere da un utente non autenticato, partiamo dalla route `/home`, in questo modo:
 
 ```typescript
 import { authGuard } from './guards/auth-guard';
@@ -606,9 +606,9 @@ export const routes: Routes = [
 
 <u>Potrebbe essere necessario inserire in `app.ts` (nel costruttore) `getAuth().signOut()` perchè non abbiamo ancora un tasto di _logout_ per testare questa funzionalità.</u>
 
-- [ ] Creare un nuova cartella `brand` in `public/images` e inserire al suo interno il file `logo.svg` fornito;
-- [ ] Aggiungiamo una variabile CSS per il colore di _accento_ in `styles.scss`, impostiamo `--accent-color` a `crimson`, essendo valido per entrambi i temi basta inserire la variabile in `:root`;
-- [ ] Aggiorniamo `landing-page` per mostrare il logo sopra al titolo, utilizziamo `mask-image` per mostrare il logo con il colore del tema attivo;
+- [x] Creare un nuova cartella `brand` in `public/images` e inserire al suo interno il file `logo.svg` fornito;
+- [x] Aggiungiamo una variabile CSS per il colore di _accento_ in `styles.scss`, impostiamo `--accent-color` a `crimson`, essendo valido per entrambi i temi basta inserire la variabile in `:root`;
+- [x] Aggiorniamo `landing-page` per mostrare il logo sopra al titolo, utilizziamo `mask-image` per mostrare il logo con il colore del tema attivo;
 
 ```html
     <span class="logo" [style.background-color]="'var(--accent-color)'" 
@@ -619,7 +619,307 @@ export const routes: Routes = [
 
 > La regola `mask` funziona perfettamente in questo caso perchè il logo è monocromatico e noi possiamo usarlo come maschera e assegnare allo spazio che _ritaglia_ il colore che desideriamo, in questo caso il _colore di accento_.
 
-- [ ] Accedi e naviga automaticamente alla pagina `/home`;
-- [ ] Creare un nuovo componente `header` dentro `components/shared` con `ng g c components/shared/header`, questo componente sarà usato in tutte alcune pagine e conterrà, al momento: logo, titolo il tasto di cambio tema e tasto di logout;
+- [x] Accedi e naviga automaticamente alla pagina `/home`;
+- [x] Creare un nuovo componente `header` dentro `components/shared` con `ng g c components/shared/header`, questo componente sarà usato in tutte alcune pagine e conterrà, al momento: logo, titolo il tasto di cambio tema e tasto di logout;
+- [x] Deploy in anteprima + deploy in _prod_ dopo la verifica;
+- [x] Commit su `feature/auth-guard` e merge su `dev`, è possibile eliminare il branch `feature/auth-guard` dopo il merge.
+
+## Versione 0.0.8 - Registrazione utente
+
+- [ ] Aggiornare versione dell'app nella costante dedicata;
+- [ ] Creare un nuovo branch `feature/user-management` basato su `dev`;
+- [ ] Aggiorniamo il _label_ del bottone di apertura della dialog in `landing-page` da "Accedi" a "Entra" (più generico). Lasciamo invariata l'icona;
+
+> Questa lezione prevede la modifica della dialog e l'aggiunta dei metodi di registrazione. La via da percorrere può seguire prima l'una o l'altra attività, partiamo dalla logica di autenticazione per poi _rilassarci_ con l'aggiornamento del template.
+
+- [ ] Quando abbiamo inizialiazzato firebase (_firebase init_) abbiamo impostato anche il Firestore di modo da averlo pronto, occorre però includerlo nel progetto, utilizzeremo il metodo fornito da Firebase `getFirestore()`. Nel service `firebase.ts` creiamo una nuova variabile pubblica `database` di tipo `Firestore` e, nel costruttore, inizializziamola con il metodo appena citato. Iniettando il Firebase service in qualsiasi componente avremo così accetto all'istanza di Firestore per poter interagire con il database;
+
+```typescript
+public database: Firestore;
+constructor() {
+    // ... altre inizializzazioni
+    this.database = getFirestore(app);
+}
+```
+
+- [ ] Inietta il service `Firebase` in `auth.ts`;
+- [ ] Aggiorniamo il metodo precedentemente creato chiamato `createWithEmailAndPassword()` per implementare la logica di registrazione con Firebase, secondo documentazione ufficiale [qui](https://firebase.google.com/docs/auth/web/password-auth?hl=it#create_a_password-based_account));
+
+```typescript
+public async createWithEmailAndPassword(credential: GrantedCredential): Promise<void> {
+    const auth = getAuth();
+    return createUserWithEmailAndPassword(auth, credential.email, credential.password)
+    .then((userCredential) => {
+      const id = userCredential.user.uid;
+    })
+    .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error('Error creating user:', errorCode, errorMessage);
+    });
+  }
+```
+
+- [ ] Creiamo poi un metodo `createUserDocument()` che si occupa di creare un documento nella raccolta `users` del nostro Firestore, utilizziamo l'interfaccia `UserData` per modellare i dati che vogliamo inserire sul database;
+
+```typescript
+private async createUserDocument(user: User): Promise<void> {
+    const docRef = doc(this.firebaseService.database, "users", user.uid);
+    const userData: UserData = {
+      uid: user.uid,
+      email: user.email || "",
+      nickname: user.displayName || "",
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    }
+    return await setDoc(docRef, userData);
+}
+```
+
+> Firestore fornisce vari metodi di interazione con il db. Qui abbiamo usato `setDoc()` che crea un documento nella _reference_ fornita se questo non esiste altrimenti lo sovrascrive. 
+
+- [ ] Cambia la riga `const id = userCredential.user.uid;` con `this.createUserDocument(userCredential.user);` nel metodo `createWithEmailAndPassword()` in modo che quando un utente si registra venga creato anche il suo documento su Firestore;
+
+> Programmazione asincrona: avrai notato che il metodo `createUserDocument()` è asincrono e restituisce una promise, questo perchè l'interazione con il database è un'operazione che richiede tempo e non possiamo sapere esattamente quando sarà completata. Per questo motivo, quando chiamiamo questo metodo all'interno di `createWithEmailAndPassword()`, dobbiamo aspettare che la promise venga risolta prima di procedere con altre operazioni. In questo caso specifico, non abbiamo bisogno di fare nulla dopo la creazione del documento, quindi non è necessario usare `await` o `.then()`, ma in altri casi potresti voler eseguire del codice solo dopo che il documento è stato creato, in quel caso dovresti gestire la promise di conseguenza.
+
+- [ ] Aggiungiamo infine un paio di metodi che si occuperanno della rimozione di un'utente dal database e dall'applicazione (questo è obbligatorio per rispettare le normative sulla privacy, come il GDPR, che prevedono che un utente possa richiedere la cancellazione dei propri dati);
+
+```typescript
+public async destroyUser(): Promise<void> {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) return;
+    deleteUser(user).then(() => {
+        this.deleteUserDocument(user.uid).then(() => {
+            this.router.navigate(['/']);
+        })
+    }).catch((error) => {
+        console.error('Error deleting user:', error);
+    });
+}
+
+private async deleteUserDocument(uid: string): Promise<void> {
+    const docRef = doc(this.firebaseService.database, "users", uid);
+    return await deleteDoc(docRef);
+}
+```
+
+> Ora che abbiamo tutta la logica dedicata alla gestione della vita di un'utente (relativo all'autenticazione, non alla personalizzazione) possiamo andare ad aggiornare il template della dialog perchè anch'essa rispetti questa nuova realtà.
+
+- [ ] Creiamo una nuova cartella dentro `app` chiamata `directives` e al suo interno creiamo una nuova direttiva chiamata `tabContent` con `ng g directive tab-content`;
+
+```typescript
+@Directive({
+  selector: "[tabContent]",
+})
+export class TabContent {
+  @Input() tabContent!: number;
+
+  constructor(public template: TemplateRef<any>) {}
+}
+```
+
+> Le direttive sono un costrutto di Angular che permette di estendere il comportamento degli elementi HTML. In questo caso, la direttiva `tabContent` ci permetterà di associare un contenuto specifico ad ogni tab, in modo da mostrare solo il contenuto della tab attiva. La direttiva prende in input un numero che rappresenta l'indice della tab a cui è associata e una `TemplateRef` che rappresenta il contenuto da mostrare.
+
+- [ ] Creiamo un nuovo componente chiamato `tabs-wrapper` dentro `components/ui` (il comando ormai dovrebbe essere noto e non verrà più suggerito). Questo componente prende in `input` un array di stringhe rappresentante le etichette delle tab, lo chiameremo `tabs`, un `output` per dire al genitore quale tab è stato selezionato e una variabile `activeTab` che rappresenta la tab attiva. di tipo `number` e inizializzata a 0. Dobbiamo anche preparare il componente per la direttiva `TabContent` con il decoratore `ContentChildren` che ci permette di accedere a tutte le istanze della direttiva presenti nel template del componente;
+
+```typescript
+export class TabsWrapper {
+  public tabs = input<string[]>([]);
+  public tabChanged = output<number>();
+  public activeTab = 0;
+
+  @ContentChildren(TabContent)
+  contents!: QueryList<TabContent>;
+
+  public selectTab(index: number) {
+    this.activeTab = index;
+    this.tabChanged.emit(index);
+  }
+
+  get activeContent() {
+    return this.contents?.find(c => c.tabContent === this.activeTab);
+  }
+}
+```
+- [ ] Aggiorniamo anche il template e il CSS di `tabs-wrapper` per mostrare le etichette delle tab e il contenuto della tab attiva;
+
+```html
+<div class="tabs-container" [style.gridTemplateColumns]="'repeat(' + tabs().length + ', 1fr)'" >
+  @for (t of tabs(); track $index) {
+    <button (click)="selectTab($index)" [class.active-tab]="activeTab === $index">
+        {{ t }}
+    </button>
+  }
+</div>
+
+<div class="tab-content-container">
+  @if (activeContent) {
+    <ng-container>
+        <ng-container *ngTemplateOutlet="activeContent.template"></ng-container>
+    </ng-container>
+  }
+</div>
+```
+
+```scss
+.tabs-container {
+    display: grid;
+    gap: 2px;
+}
+
+.tab-content-container {
+    border: 1px solid var(--fg-color);
+    border-top: none;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    padding: 12px;
+    min-height: 200px;
+}
+
+button {
+    border: none;
+    border-top: 1px solid var(--fg-color);
+    border-left: 1px solid var(--fg-color);
+    border-right: 1px solid var(--fg-color);
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    background: none;
+    cursor: pointer;
+    padding: 12px;
+    width: 100%;
+
+    color: var(--bg-color);
+    background-color: var(--fg-color);
+    opacity: 0.3;
+
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+button.active-tab {
+    background-color: var(--bg-color);
+    color: var(--fg-color);
+    opacity: 1;
+}
+```
+- [ ] Creare una nuova cartella dentro `app` chiamata `validators` e al suo interno un nuovo file chiamato `auth-validator.ts` in cui inseriremo una `ValidateFn` personalizzata per verificare, durante la registrazione, che la coppia di password sia identica;
+
+```typescript
+export const passwordMatchValidator: ValidatorFn = (group: AbstractControl) => {
+  const password = group.get('password')?.value;
+  const confirmPassword = group.get('confirmPassword')?.value;
+
+  if (!confirmPassword) return null;
+
+  return password === confirmPassword ? null : { passwordMismatch: true };
+};
+```
+
+- [ ] Ora dobbiamo aggiornare il template di `AuthDialog` per usare questo nuovo componente e mostrare così i campi del form corretti. Va anche aggiornato il Componente `AuthDialog` per gestire la logica del cambio tab;
+
+```typescript
+public selectedTab: number = 0;
+public tabs = ['Accedi', 'Registrati'];
+
+constructor(private dialogRef: DialogRef<AuthDialogResult>, private fb: FormBuilder) {
+    this.authForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['']
+    }, { validators: passwordMatchValidator })
+}
+
+public onTabChange(event: { index: number; label: string }): void {
+    this.selectedTab = event.index;
+
+    const control = this.authForm.get('confirmPassword');
+
+    if (event.label.toLowerCase() === 'registrati') {
+      control?.setValidators([Validators.required, Validators.minLength(6)]);
+    } else {
+      control?.clearValidators();
+    }
+    control?.updateValueAndValidity();
+}
+```
+```html
+<app-dialog-wrapper title="Autenticazione">
+    <app-tabs-wrapper [tabs]="tabs" (tabChanged)="onTabChange($event)">
+        <ng-template [tabContent]="0">
+            //... form di login
+        </ng-template>
+        <ng-template [tabContent]="1">
+            //... form di registrazione
+        </ng-template>
+    </app-tabs-wrapper>
+
+    <app-base-btn dialog-action label="Annulla" icon="close" (clicked)="close()"></app-base-btn>
+    <app-base-btn dialog-action [label]="tabs[selectedTab]" icon="login" (clicked)="submit()"
+        [disabled]="authForm.invalid"></app-base-btn>
+</app-dialog-wrapper>
+```
+
+- [ ] Prima di passare al test finale dobbiamo aggiornare la risposta che da la dialog quando si chiude perchè non abbiamo tutti gli elementi necessari a distinguere un flusso dall'altro. In `AuthDialog` aggiorniamo l'interfaccia di risposta e così anche il metodo `submit()`;
+
+```typescript
+interface AuthDialogResult {
+  success: boolean;
+  credentials?: any;
+  message?: string;
+}
+
+// ...
+
+public submit(): void {
+    if (this.authForm.invalid) return;
+    const result = this.authForm.value;
+    this.dialogRef.close({
+      success: true,
+      credentials: result,
+      message: this.tabs[this.selectedTab] === 'Accedi' ? 'access' : 'register'
+    })
+}
+```
+
+- [ ] In `LandingPage` ora possiamo sapere con precisione cosa succede alla chiusura della dialog, aggiorniamo di conseguenza il `subscribe` per gestire i due flussi in modo distinto;
+
+```typescript
+dialogRef.closed.subscribe((result: any) => {
+    if (!result?.success) return;
+    if (result?.message === 'register') {
+        this.authService.createWithEmailAndPassword(result?.credentials).then(() => {
+          this.router.navigate(['/home']);
+        });
+    } else if (result?.message === 'access') {
+        this.authService.loginWithEmailAndPassword(result?.credentials).then(() => {
+          this.router.navigate(['/home']);
+        })
+    }
+});
+```
+
+- [ ] Anzichè continuare ad usare le credenziali di test create precedentemente ora possiamo provare se funziona la registrazione di un nuovo utente. Attenzione: ricorda di usare una mail esistente per poter avere accesso alla casella e verificare la creazione dell'utente anche da Firebase Console. Dopo la registrazione, verifica che l'utente venga creato anche su Firestore e che venga mostrato in console quando ricarichi la pagina (grazie al `getAuth().onAuthStateChanged()` inserito nel service `Firebase`);
+- [ ] Prova anche ad autenticarti con l'utente appena creato per verificare che tutto funzioni correttamente;
+- [ ] Concludiamo con alcuni miglioramenti di stile. Importiamo un font da Google Fonts e impostimolo come unico font dell'app, lo importiamo direttamente in `styele.scss` con `@import` e poi lo assegniamo alla variabile CSS `--font-family` che abbiamo già definito in precedenza;
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap');
+
+:root {
+    // ... altre variabili
+    --font-family: 'Fustat', serif;
+}
+
+* {
+    font-family: var(--font-family);
+}
+
+```
+
 - [ ] Deploy in anteprima + deploy in _prod_ dopo la verifica;
-- [ ] Commit su `feature/auth-guard` e merge su `dev`, è possibile eliminare il branch `feature/auth-guard` dopo il merge.
+- [ ] Commit su `feature/user-management` e merge su `dev`, è possibile eliminare il branch `feature/user-management` dopo il merge.
+
+## Versione 0.0.9 - Personalizzazione utente + Home page

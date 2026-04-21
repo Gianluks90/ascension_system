@@ -32,9 +32,15 @@ export class LandingPage {
 
     dialogRef.closed.subscribe((result: any) => {
       if (!result?.success) return;
-      this.authService.loginWithEmailAndPassword(result?.credentials).then(() => {
-        this.router.navigate(['/home']);
-      })
+      if (result?.message === 'register') {
+        this.authService.createWithEmailAndPassword(result?.credentials).then(() => {
+          this.router.navigate(['/home']);
+        });
+      } else if (result?.message === 'access') {
+        this.authService.loginWithEmailAndPassword(result?.credentials).then(() => {
+          this.router.navigate(['/home']);
+        })
+      }
     });
   }
 }

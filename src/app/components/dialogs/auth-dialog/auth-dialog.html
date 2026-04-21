@@ -1,15 +1,40 @@
 <app-dialog-wrapper title="Autenticazione">
-    <form [formGroup]="authForm">
-        <div class="form-field">
-            <label for="email">Email</label>
-            <input id="email" formControlName="email" type="email" placeholder="Inserisci la tua email">
-        </div>
-        <div class="form-field">
-            <label for="password">Password</label>
-            <input id="password" formControlName="password" type="password" placeholder="Inserisci la tua password">
-        </div>
-    </form>
-    
+    <app-tabs-wrapper [tabs]="tabs" (tabChanged)="onTabChange($event)">
+        <ng-template [tabContent]="0">
+            <form [formGroup]="authForm">
+                <div class="form-field">
+                    <label for="email">Email</label>
+                    <input id="email" formControlName="email" type="email" placeholder="Inserisci la tua email">
+                </div>
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input id="password" formControlName="password" type="password"
+                        placeholder="Inserisci la tua password">
+                </div>
+            </form>
+        </ng-template>
+
+        <ng-template [tabContent]="1">
+            <form [formGroup]="authForm">
+                <div class="form-field">
+                    <label for="email">Email</label>
+                    <input id="email" formControlName="email" type="email" placeholder="Inserisci la tua email">
+                </div>
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input id="password" formControlName="password" type="password"
+                        placeholder="Inserisci la tua password">
+                </div>
+                <div class="form-field">
+                    <label for="confirmPassword">Conferma Password</label>
+                    <input id="confirmPassword" formControlName="confirmPassword" type="password"
+                        placeholder="Conferma la tua password">
+                </div>
+            </form>
+        </ng-template>
+    </app-tabs-wrapper>
+
     <app-base-btn dialog-action label="Annulla" icon="close" (clicked)="close()"></app-base-btn>
-    <app-base-btn dialog-action label="Accedi" icon="login" (clicked)="submit()" [disabled]="authForm.invalid"></app-base-btn>
+    <app-base-btn dialog-action [label]="tabs[selectedTab]" icon="login" (clicked)="submit()"
+        [disabled]="authForm.invalid"></app-base-btn>
 </app-dialog-wrapper>
